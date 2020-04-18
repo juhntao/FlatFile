@@ -18,6 +18,10 @@
     [Binding]
     public class FixedLengthFileDefinitions
     {
+        private readonly ScenarioContext _context;
+
+        public FixedLengthFileDefinitions(ScenarioContext context) => _context = context;
+
         [Given(@"I have specification for '(.*)' fixed-length type")]
         public void GivenIHaveSpecificationForType(string type, Table table)
         {
@@ -65,7 +69,7 @@
                 HasHeader = false
             };
 
-            ScenarioContext.Current.Add(() => descriptor, descriptor);
+            _context.Add(() => descriptor, descriptor);
 
         }
 
@@ -73,7 +77,7 @@
         public void GivenIHaveSeveralEntities(IEnumerable<TestObject> testObjects)
         {
             var objects = testObjects.ToArray();
-            ScenarioContext.Current.Add("testObjects", objects);
+            _context.Add("testObjects", objects);
         }
 
         [When(@"I convert entities to the fixed-length format")]
@@ -81,15 +85,15 @@
         {
             var fileEngineFactory = new FixedLengthFileEngineFactory();
 
-            var descriptor = ScenarioContext.Current.Get<ILayoutDescriptor<IFixedFieldSettingsContainer>>("descriptor");
+            var descriptor = _context.Get<ILayoutDescriptor<IFixedFieldSettingsContainer>>("descriptor");
 
             var fileEngine = fileEngineFactory.GetEngine(descriptor);
 
-            var testObjects = ScenarioContext.Current.Get<TestObject[]>("testObjects");
+            var testObjects = _context.Get<TestObject[]>("testObjects");
 
             var fileContent = fileEngine.WriteToString(testObjects);
 
-            ScenarioContext.Current.Add(() => fileContent, fileContent);
+            _context.Add(() => fileContent, fileContent);
         }
 
         [Then(@"^the result should be$")]
@@ -101,7 +105,7 @@
 
             string fileContent = string.Empty;
 
-            ScenarioContext.Current.TryGetValue(() => fileContent, out fileContent);
+            _context.TryGetValue(() => fileContent, out fileContent);
 
             fileContent.Should().Be(multilineText);
         }
